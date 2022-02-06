@@ -5,6 +5,7 @@
 kubectl exec -it vault-0 -- /bin/sh
 
 #Create key-value store in Vault to keep my secrets
+
 vault secrets enable -path=mysqlwordpress kv-v2
 
 #Write secret
