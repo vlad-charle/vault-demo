@@ -43,5 +43,7 @@ kubectl logs pod/db-7b6d744689-msgfc --container db
 #Login to DB container, login as root, list all users
 
 kubectl exec -it pod/db-7b6d744689-msgfc --container db -- /bin/bash
+
 mysql -u root -p
+
 SELECT User FROM mysql.user;
