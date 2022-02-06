@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: php-httpd
+  labels:
+    app: php-httpd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: php-httpd
+  template:
+    metadata:
+      labels:
+        app: php-httpd
+    spec:
+      containers:
+      - name: php-httpd
+        image: vladsanyuk/ssdevopscc:php-httpd
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: php-httpd
+spec:
+  selector:
+    app: php-httpd
+  type: LoadBalancer  
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+      nodePort: 30000

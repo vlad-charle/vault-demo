@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mariadb-deployment
+  labels:
+    app: mariadb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mariadb
+  template:
+    metadata:
+      annotations:
+        vault.hashicorp.com/agent-inject: 'true'
+        vault.hashicorp.com/role: "mysql"
+        vault.hashicorp.com/agent-inject-secret-database-config.txt: "mysql/data/database/config"
+        vault.hashicorp.com/agent-inject-template-database-config.txt: |
+          {{- with secret "mysql/data/database/config" -}}
+          export MYSQL_USER="{{ .Data.data.MYSQL_USER }}" \
+          export MYSQL_PASSWORD="{{ .Data.data.MYSQL_PASSWORD }}" \
+          export MYSQL_ROOT_PASSWORD="{{ .Data.data.MYSQL_ROOT_PASSWORD }}"
+          {{- end -}}
+      labels:
+        app: mariadb
+    spec:
+      serviceAccountName: mysql
+      containers:
+      - name: mariadb
+        command: ["/bin/sh"]
+        args: ["-c", ". /vault/secrets/database-config.txt"]
+        image: mariadb:10.5.2
+        ports:
+        - containerPort: 3306
+        env:
+        - name: TZ
+          value: "Europe/Rome"
+        - name: MYSQL_ALLOW_EMPTY_PASSWORD
+          value: "no"
+        - name: MYSQL_DATABASE
+          value: testdb
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mariadb-service
+spec:
+  selector:
+    app: mariadb
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306
